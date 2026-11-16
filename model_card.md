@@ -1,53 +1,112 @@
-# 🎧 VibeFinder 1.0 – Music Recommender Model Card
+# VibeFinder 2.0 — AI-Powered Music Discovery Assistant
 
-## 1. Model Name
+## 1. System Name
 
-**VibeFinder 1.0 – Music Recommender Simulation**
+**VibeFinder 2.0 — AI-Powered Music Discovery Assistant**
 
-VibeFinder is a content-based music recommendation system that suggests songs based on a user's musical preferences.
+VibeFinder 2.0 extends the original VibeFinder 1.0 content-based music recommendation simulation into a natural-language AI recommendation application.
 
-## 2. Goal / Task
+The system allows users to describe the music they want in everyday language. A Gemini-powered preference parser converts the request into structured preferences, while the existing Python recommendation engine ranks songs from a local catalog.
 
-The goal of VibeFinder is to recommend songs that match a user's preferences.
+The application combines generative AI with deterministic recommendation logic and a reliability layer.
 
-The user provides a favorite genre, favorite mood, and target values for different audio features. The system calculates a score for each song, ranks the songs, and returns the five highest-scoring recommendations with explanations.
+## 2. Goal and Task
 
-This project demonstrates how a simple recommendation algorithm can use song characteristics to suggest music without needing listening history or information from other users.
+The goal is to make music discovery more accessible by allowing users to describe their listening needs naturally instead of manually entering individual music preferences.
 
-## 3. Data Used
+For example:
 
-The model uses a CSV dataset containing **18 songs**.
+> I want calm instrumental music for studying, nothing too energetic.
 
-Each song includes an ID, title, artist, genre, mood, and five numerical audio characteristics:
+The system attempts to:
 
-- Energy
-- Tempo
-- Valence
-- Danceability
-- Acousticness
+1. Understand the user's natural-language request.
+2. Extract relevant musical preferences and constraints.
+3. Ask for clarification when the request is too ambiguous.
+4. Filter songs according to supported explicit constraints.
+5. Rank eligible songs using the existing recommendation engine.
+6. Validate the recommendations before returning them.
+7. Explain why each song was recommended.
 
-Five additional attributes were introduced in Challenge 1:
+VibeFinder is a classroom demonstration of how a language model can work alongside a traditional recommendation algorithm.
 
-- Popularity
-- Release decade
-- Mood tags
-- Language
-- Instrumentalness
+## 3. System Architecture
 
-These attributes allow the system to consider more detailed musical preferences. The additional metadata in the demonstration dataset is illustrative and simulated.
+VibeFinder 2.0 uses a hybrid architecture.
 
-The catalog includes genres such as pop, rock, lofi, jazz, ambient, synthwave, indie pop, country, R&B, blues, reggae, metal, classical, funk, and house.
+### Main Components
 
-The dataset was expanded from 10 to 18 songs to include more genres and moods.
+**1. Gemini Preference Parser**
 
-Although the dataset provides variety for experimentation, it is still small compared with real-world music catalogs. This limits the diversity of recommendations the system can provide.
+The application uses Google's Gemini API to interpret natural-language requests.
 
-## 4. Algorithm Summary
+The parser uses structured JSON output and Pydantic validation to extract fields such as:
 
-VibeFinder uses **content-based filtering**. Instead of comparing listening histories between users, it compares the characteristics of each song with a user's preferences.
+- Favorite genre
+- Favorite mood
+- Target energy
+- Target tempo
+- Target valence
+- Target danceability
+- Target acousticness
+- Preferred popularity
+- Preferred release decade
+- Preferred language
+- Preferred instrumentalness
+- Listening context
+- Explicit preferences and constraints
+- Inferred preferences
+- Confidence and clarification information
 
-The system considers seven features:
+The parser checks extracted categorical preferences against the available song catalog. It also tracks when defaults are applied.
 
+**2. Music Recommendation Agent**
+
+The agent coordinates the application workflow. It connects preference extraction, reliability checks, the existing recommendation engine, and output validation.
+
+**3. Reliability Layer**
+
+The reliability component checks supported explicit constraints before recommendations are ranked.
+
+Current supported constraint checks include:
+
+- Instrumental-only requests: instrumentalness must be at least 0.80.
+- Low-energy requests: energy must not exceed 0.50.
+- Release-decade requests: songs must match the requested decade when a decade constraint is explicitly identified.
+
+If no songs satisfy the supported constraints, the application returns a no-valid-matches response rather than recommending an ineligible song.
+
+**4. Existing Recommendation Engine**
+
+The original content-based recommendation engine remains responsible for calculating scores and ranking songs.
+
+It uses deterministic Python logic rather than asking Gemini to invent or rank songs.
+
+**5. Output Validation**
+
+Before returning recommendations, the system checks that:
+
+- Recommended songs belong to the eligible catalog.
+- Recommendation scores are numeric.
+- Explanations are strings.
+
+Invalid results are rejected.
+
+### Architecture Diagram
+
+The complete system architecture is available in:
+
+`diagrams/architecture.mmd`
+
+## 4. Data Used
+
+The application uses a local CSV dataset containing **18 songs**.
+
+Each song contains:
+
+- ID
+- Title
+- Artist
 - Genre
 - Mood
 - Energy
@@ -55,304 +114,315 @@ The system considers seven features:
 - Valence
 - Danceability
 - Acousticness
+- Popularity
+- Release decade
+- Mood tags
+- Language
+- Instrumentalness
 
-### Baseline Scoring Rules
+The dataset includes genres such as pop, rock, lofi, jazz, ambient, synthwave, indie pop, country, R&B, blues, reggae, metal, classical, funk, and house.
 
-The original scoring configuration awards:
+Some additional metadata is illustrative and simulated rather than verified information from a commercial music catalog.
 
-- 2.0 points for an exact genre match.
-- 1.0 point for an exact mood match.
-- Up to 1.5 points for energy similarity.
-- Up to 1.5 points for tempo similarity.
-- Up to 1.0 point each for valence, danceability, and acousticness similarity.
+The dataset is small and was designed for experimentation and classroom demonstration. It is not representative of the diversity or scale of a commercial streaming catalog.
 
-For numerical features, songs receive more points when their values are closer to the user's target values.
+## 5. Recommendation Algorithm
 
-The points are added together to produce a maximum baseline score of 9.
+VibeFinder uses content-based filtering.
 
-The system then sorts songs from highest to lowest score and returns the top five recommendations with explanations.
+The recommendation engine compares the extracted user preferences with song attributes and calculates scores using the existing weighted scoring logic.
 
-Compared with the original starter logic, VibeFinder implements CSV loading, weighted scoring, ranking, and recommendation explanations.
+The original VibeFinder 1.0 scoring configuration included:
 
-### Advanced Attributes and Strategy Pattern
+- Genre match: 2.0 points
+- Mood match: 1.0 point
+- Energy similarity: up to 1.5 points
+- Tempo similarity: up to 1.5 points
+- Valence similarity: up to 1.0 point
+- Danceability similarity: up to 1.0 point
+- Acousticness similarity: up to 1.0 point
 
-Challenge 1 expanded the scoring system with five optional attributes: popularity, release decade, mood tags, language, and instrumentalness. When a user provides preferences for these attributes, the system can award additional points based on how well a song matches them.
+The maximum baseline score was 9 points.
 
-Challenge 2 introduced the **Strategy design pattern** to make recommendation behavior more flexible.
+VibeFinder 1.0 also introduced four recommendation strategies through the Strategy design pattern:
 
-Four strategies are available:
+- **BalancedStrategy:** Balances the recommendation features.
+- **GenreFirstStrategy:** Prioritizes genre similarity.
+- **MoodFirstStrategy:** Prioritizes mood similarity.
+- **EnergyFirstStrategy:** Prioritizes energy similarity.
 
-- **BalancedStrategy:** Uses balanced weights across recommendation features.
-- **GenreFirstStrategy:** Gives greater importance to matching the user's favorite genre.
-- **MoodFirstStrategy:** Gives greater importance to matching the user's preferred mood.
-- **EnergyFirstStrategy:** Gives greater importance to matching the user's target energy level.
+These strategies remain part of the underlying recommendation project.
 
-A shared `ScoringStrategy` class provides the scoring structure, while the individual strategies use different weights to influence song rankings.
+In VibeFinder 2.0, the AI parser translates natural-language requests into structured preferences. The deterministic recommendation engine then uses those preferences to calculate and rank recommendations.
 
-The `Recommender` class accepts a strategy object. Its `set_strategy()` method allows the active strategy to be changed without rewriting the recommendation process.
+The language model does not directly calculate recommendation scores or create songs that are absent from the catalog.
 
-The original function-based API was also preserved so the existing application could continue working.
+## 6. Reliability, Guardrails, and Error Handling
 
-This design makes VibeFinder easier to extend and experiment with because recommendation priorities can change independently of the main recommendation logic.
+Reliability is an important part of VibeFinder 2.0.
 
+The application includes several checks to reduce incorrect or misleading recommendations.
 
-## 5. Observed Behavior, Strengths, and Biases
+### Preference Validation
 
-VibeFinder provides a simple and understandable way to connect musical preferences with recommendations.
+- Structured output is validated using Pydantic.
+- Extracted categorical preferences are checked against catalog values.
+- Missing preferences may receive documented defaults.
+- Low-confidence or ambiguous requests can trigger a clarification response.
 
-Its strengths include:
+The clarification threshold currently uses a confidence score below 0.55, or a clarification question returned by the parser.
 
-- It considers both categorical preferences, such as genre and mood, and numerical audio characteristics.
-- It gives partial credit for numerical similarities instead of requiring exact matches.
-- It uses weighted scoring to give different importance to different preferences.
-- It ranks songs consistently based on their calculated scores.
-- It explains which features contributed to each recommendation.
+### Explicit Constraint Filtering
 
-In the High-Energy Pop profile, Sunrise City received the highest baseline score because it closely matched the user's genre, mood, and numerical preferences.
+The reliability layer filters candidates before recommendation ranking.
 
-However, testing revealed an important weakness: the recommender does not penalize songs for contradicting a user's preferences.
+Examples:
 
-For example, Gym Hero ranked first for the High-Energy Melancholic profile even though its mood was intense rather than melancholic. Its genre and numerical similarities helped it receive a high score.
+| User constraint | Current behavior |
+|---|---|
+| Instrumental only | Excludes songs below 0.80 instrumentalness |
+| Nothing too energetic | Excludes songs above 0.50 energy |
+| Only music from the 2000s | Keeps songs matching the requested decade when identified as an explicit decade constraint |
 
-This shows that matching some features can outweigh an important preference that does not match.
+These are engineering thresholds chosen for this demonstration. They have not been scientifically validated.
 
-Another limitation is the small dataset. The system may repeatedly recommend similar songs because it has only 18 songs to choose from.
+The application currently supports only a limited set of explicit constraint phrases. It does not guarantee enforcement of every possible natural-language restriction.
 
-The scoring weights can also influence the results. Features with higher weights have more influence on the final recommendations.
+### Recommendation Validation
 
-## 6. Evaluation Process
+The system checks that recommendations come from the eligible candidate list and contain valid score and explanation fields.
 
-I tested VibeFinder using four different user profiles:
+If validation fails, the application returns a validation-failure response rather than displaying the invalid recommendations as successful results.
 
-1. **High-Energy Pop:** Favorite genre pop, happy mood, high energy, fast tempo, and high danceability.
-2. **Chill Lofi:** Favorite genre lofi, chill mood, low energy, slower tempo, and high acousticness.
-3. **Deep Intense Rock:** Favorite genre rock, intense mood, high energy, and fast tempo.
-4. **High-Energy Melancholic:** Favorite genre pop, melancholic mood, high energy, fast tempo, and low valence. This profile was designed to test conflicting preferences.
+### Error Handling
 
-### Baseline Results
+The CLI catches request-processing errors and allows the user to try again.
 
-The original scoring configuration produced these top recommendations:
+External Gemini API failures, including temporary service-unavailable errors, can prevent a live recommendation request from completing.
 
-- High-Energy Pop: Sunrise City (8.40/9)
-- Chill Lofi: Library Rain (8.87/9)
-- Deep Intense Rock: Storm Runner (8.76/9)
-- High-Energy Melancholic: Gym Hero (7.04/9)
+The system therefore depends on external API availability for natural-language preference extraction.
 
-The first three results generally matched the intended musical preferences. The most surprising result was Gym Hero ranking first for the High-Energy Melancholic profile despite having an intense mood instead of a melancholic mood.
+## 7. Evaluation and Testing
 
-### Baseline Terminal Output
+The project includes automated tests for the original recommendation functionality, reliability checks, and agent workflow.
 
-The following output shows the top five recommendations and their scoring explanations for all four profiles using the original weights.
+The current automated test suite reports:
 
-```text
-=======================================================
-PROFILE: High-Energy Pop
-=======================================================
-1. Sunrise City - Score: 8.40/9
-   Because: Genre match (+2.00), Mood match (+1.00), Energy similarity (+1.30), Tempo similarity (+1.35), Valence similarity (+0.94), Danceability similarity (+0.89), Acousticness similarity (+0.92)
-2. Gym Hero - Score: 7.75/9
-   Because: Genre match (+2.00), Energy similarity (+1.47), Tempo similarity (+1.47), Valence similarity (+0.87), Danceability similarity (+0.98), Acousticness similarity (+0.95)
-3. Rooftop Lights - Score: 6.22/9
-   Because: Mood match (+1.00), Energy similarity (+1.22), Tempo similarity (+1.42), Valence similarity (+0.91), Danceability similarity (+0.92), Acousticness similarity (+0.75)
-4. Neon Fever - Score: 5.84/9
-   Because: Energy similarity (+1.40), Tempo similarity (+1.47), Valence similarity (+0.99), Danceability similarity (+1.00), Acousticness similarity (+0.98)
-5. Funky Friday - Score: 5.58/9
-   Because: Energy similarity (+1.35), Tempo similarity (+1.31), Valence similarity (+0.98), Danceability similarity (+0.96), Acousticness similarity (+0.98)
+**12 passed.**
 
-=======================================================
-PROFILE: Chill Lofi
-=======================================================
-1. Library Rain - Score: 8.87/9
-   Because: Genre match (+2.00), Mood match (+1.00), Energy similarity (+1.50), Tempo similarity (+1.46), Valence similarity (+1.00), Danceability similarity (+0.97), Acousticness similarity (+0.94)
-2. Midnight Coding - Score: 8.66/9
-   Because: Genre match (+2.00), Mood match (+1.00), Energy similarity (+1.40), Tempo similarity (+1.46), Valence similarity (+0.96), Danceability similarity (+0.93), Acousticness similarity (+0.91)
-3. Focus Flow - Score: 7.78/9
-   Because: Genre match (+2.00), Energy similarity (+1.42), Tempo similarity (+1.44), Valence similarity (+0.99), Danceability similarity (+0.95), Acousticness similarity (+0.98)
-4. Spacewalk Thoughts - Score: 6.40/9
-   Because: Mood match (+1.00), Energy similarity (+1.40), Tempo similarity (+1.31), Valence similarity (+0.95), Danceability similarity (+0.86), Acousticness similarity (+0.88)
-5. Coffee Shop Stories - Score: 5.57/9
-   Because: Energy similarity (+1.47), Tempo similarity (+1.31), Valence similarity (+0.89), Danceability similarity (+0.99), Acousticness similarity (+0.91)
+The tests cover:
 
-=======================================================
-PROFILE: Deep Intense Rock
-=======================================================
-1. Storm Runner - Score: 8.76/9
-   Because: Genre match (+2.00), Mood match (+1.00), Energy similarity (+1.44), Tempo similarity (+1.46), Valence similarity (+0.92), Danceability similarity (+0.94), Acousticness similarity (+1.00)
-2. Gym Hero - Score: 5.98/9
-   Because: Mood match (+1.00), Energy similarity (+1.47), Tempo similarity (+1.21), Valence similarity (+0.63), Danceability similarity (+0.72), Acousticness similarity (+0.95)
-3. Iron Thunder - Score: 5.74/9
-   Because: Energy similarity (+1.48), Tempo similarity (+1.38), Valence similarity (+0.95), Danceability similarity (+0.99), Acousticness similarity (+0.94)
-4. Night Drive Loop - Score: 4.80/9
-   Because: Energy similarity (+1.20), Tempo similarity (+0.94), Valence similarity (+0.91), Danceability similarity (+0.87), Acousticness similarity (+0.88)
-5. Neon Fever - Score: 4.73/9
-   Because: Energy similarity (+1.40), Tempo similarity (+1.16), Valence similarity (+0.49), Danceability similarity (+0.70), Acousticness similarity (+0.98)
+- Existing recommendation functionality.
+- Instrumental constraint filtering.
+- Low-energy constraint filtering.
+- Release-decade filtering.
+- Cases with no eligible songs.
+- Recommendation validation.
+- Successful agent workflow using mocked components.
+- Clarification behavior.
+- No-valid-matches behavior.
 
-=======================================================
-PROFILE: High-Energy Melancholic
-=======================================================
-1. Gym Hero - Score: 7.04/9
-   Because: Genre match (+2.00), Energy similarity (+1.47), Tempo similarity (+1.27), Valence similarity (+0.43), Danceability similarity (+0.92), Acousticness similarity (+0.95)
-2. Sunrise City - Score: 6.67/9
-   Because: Genre match (+2.00), Energy similarity (+1.30), Tempo similarity (+1.10), Valence similarity (+0.36), Danceability similarity (+0.99), Acousticness similarity (+0.92)
-3. Storm Runner - Score: 5.50/9
-   Because: Energy similarity (+1.44), Tempo similarity (+1.47), Valence similarity (+0.72), Danceability similarity (+0.86), Acousticness similarity (+1.00)
-4. Iron Thunder - Score: 5.38/9
-   Because: Energy similarity (+1.48), Tempo similarity (+1.31), Valence similarity (+0.85), Danceability similarity (+0.79), Acousticness similarity (+0.94)
-5. Neon Fever - Score: 4.79/9
-   Because: Energy similarity (+1.40), Tempo similarity (+1.23), Valence similarity (+0.29), Danceability similarity (+0.90), Acousticness similarity (+0.98)
-```
+The agent tests use mocked preference extraction so that the application workflow can be tested without depending on live Gemini API availability.
 
-### Profile Comparisons
+### Representative Evaluation Scenarios
 
-- **High-Energy Pop vs. Chill Lofi:** Sunrise City ranked first for the pop profile, while Library Rain ranked first for the lofi profile. Their different genre, mood, and energy preferences explain the different results.
-- **High-Energy Pop vs. Deep Intense Rock:** Sunrise City ranked first for pop, while Storm Runner ranked first for rock. Storm Runner received points for matching both the rock genre and intense mood.
-- **High-Energy Pop vs. High-Energy Melancholic:** Both profiles ranked Gym Hero and Sunrise City highly. However, Gym Hero won for the melancholic profile because its pop genre and numerical similarities outweighed the absence of a mood match.
-- **Chill Lofi vs. Deep Intense Rock:** Library Rain ranked first for chill lofi, while Storm Runner ranked first for intense rock. Their different target energy and tempo values contributed to the results.
-- **Chill Lofi vs. High-Energy Melancholic:** Library Rain ranked first for chill lofi, while Gym Hero ranked first for the melancholic profile. Their contrasting energy and valence preferences explain much of the difference.
-- **Deep Intense Rock vs. High-Energy Melancholic:** Storm Runner ranked first for rock, while Gym Hero ranked first for the melancholic profile. Genre and mood matches influenced the results, while high energy benefited several songs in both profiles.
+**Scenario 1 — Successful recommendation**
+
+Input:
+
+> I want instrumental music for studying.
+
+Expected behavior:
+
+- Extract music preferences.
+- Apply the instrumental-only constraint.
+- Exclude songs below the instrumentalness threshold.
+- Rank eligible songs.
+- Validate the returned recommendations.
+
+**Scenario 2 — No valid matches**
+
+Input:
+
+> I only want music from the 1990s.
+
+Expected behavior:
+
+- Identify the requested decade.
+- Apply the decade constraint.
+- Return a no-valid-matches response if no catalog songs qualify.
+- Do not recommend songs that violate the constraint.
+
+**Scenario 3 — Ambiguous request**
+
+Input:
+
+> Play something.
+
+Expected behavior:
+
+- Detect insufficient information or low confidence.
+- Ask the user a clarification question.
+- Avoid generating recommendations until clarification is provided.
+
+Additional scenario documentation is available in:
+
+`logs/agent_traces.md`
+
+These are representative workflow traces, not recordings of successful live Gemini API calls.
+
+### Live API Testing
+
+The CLI was launched and a natural-language request was submitted to Gemini.
+
+The API returned a `503 UNAVAILABLE` response because the selected model was experiencing high demand.
+
+This demonstrated that the application can encounter external service-availability limitations. The mocked automated tests remain independent of that external service.
+
+## 8. Baseline Evaluation: VibeFinder 1.0
+
+Before introducing the AI-powered workflow, VibeFinder 1.0 was evaluated using four predefined profiles:
+
+1. High-Energy Pop
+2. Chill Lofi
+3. Deep Intense Rock
+4. High-Energy Melancholic
+
+The original baseline produced these top recommendations:
+
+| Profile | Top recommendation | Score |
+|---|---|---:|
+| High-Energy Pop | Sunrise City | 8.40/9 |
+| Chill Lofi | Library Rain | 8.87/9 |
+| Deep Intense Rock | Storm Runner | 8.76/9 |
+| High-Energy Melancholic | Gym Hero | 7.04/9 |
+
+The High-Energy Melancholic profile revealed a weakness: Gym Hero ranked first even though its mood did not match the requested melancholic mood.
+
+This illustrated how numerical similarities and other feature weights can outweigh an important preference mismatch.
 
 ### Weight-Shift Experiment
 
-I conducted an experiment by reducing the genre weight from 2 to 1 point and increasing the energy weight from 1.5 to 3 points.
+An experiment reduced genre weight from 2 to 1 and increased energy weight from 1.5 to 3.
 
-The experimental scoring configuration became:
+The maximum score increased from 9 to 9.5.
 
-- Genre: 1.0 point.
-- Mood: 1.0 point.
-- Energy: up to 3.0 points.
-- Tempo: up to 1.5 points.
-- Valence: up to 1.0 point.
-- Danceability: up to 1.0 point.
-- Acousticness: up to 1.0 point.
+The top-ranked songs remained unchanged for all four profiles, although several lower-ranked songs became more competitive.
 
-The maximum possible experimental score increased from 9 to 9.5 points.
+For example, Iron Thunder became more competitive for the Deep Intense Rock profile because of its high energy similarity.
 
-The experimental top recommendations remained the same for all four profiles:
+This experiment demonstrated that changing weights affects ranking scores but does not necessarily improve recommendation quality.
 
-- High-Energy Pop: Sunrise City (8.71/9.5)
-- Chill Lofi: Library Rain (9.37/9.5)
-- Deep Intense Rock: Storm Runner (9.20/9.5)
-- High-Energy Melancholic: Gym Hero (7.51/9.5)
+The original detailed baseline and weight-shift results are documented in the project's earlier VibeFinder 1.0 evaluation.
 
-Although the top-ranked songs did not change, several lower-ranked songs became more competitive. For example, Iron Thunder increased from 5.74 to 7.22 for the Deep Intense Rock profile because of its high energy similarity.
+## 9. Strengths and Limitations
 
-The experiment showed that changing weights affects the importance of individual preferences, but does not necessarily improve recommendation quality. Higher scores do not automatically mean better recommendations.
+### Strengths
 
-### Experimental Terminal Output
+- Accepts natural-language music requests.
+- Separates language understanding from deterministic recommendation scoring.
+- Uses structured output validation.
+- Includes explicit constraint filtering.
+- Supports clarification for ambiguous requests.
+- Provides recommendation explanations.
+- Includes automated tests for important workflow behaviors.
+- Builds on the original Strategy-pattern recommendation engine.
 
-The following output shows the top five recommendations and their scoring explanations for all four profiles after changing the genre and energy weights.
+### Limitations
 
-```text
-=======================================================
-PROFILE: High-Energy Pop
-=======================================================
-1. Sunrise City - Score: 8.71/9.5
-   Because: Genre match (+1.00), Mood match (+1.00), Energy similarity (+2.61), Tempo similarity (+1.35), Valence similarity (+0.94), Danceability similarity (+0.89), Acousticness similarity (+0.92)
-2. Gym Hero - Score: 8.21/9.5
-   Because: Genre match (+1.00), Energy similarity (+2.94), Tempo similarity (+1.47), Valence similarity (+0.87), Danceability similarity (+0.98), Acousticness similarity (+0.95)
-3. Rooftop Lights - Score: 7.44/9.5
-   Because: Mood match (+1.00), Energy similarity (+2.43), Tempo similarity (+1.42), Valence similarity (+0.91), Danceability similarity (+0.92), Acousticness similarity (+0.75)
-4. Neon Fever - Score: 7.23/9.5
-   Because: Energy similarity (+2.79), Tempo similarity (+1.47), Valence similarity (+0.99), Danceability similarity (+1.00), Acousticness similarity (+0.98)
-5. Funky Friday - Score: 6.93/9.5
-   Because: Energy similarity (+2.70), Tempo similarity (+1.31), Valence similarity (+0.98), Danceability similarity (+0.96), Acousticness similarity (+0.98)
+- The song catalog contains only 18 songs.
+- The dataset includes illustrative metadata.
+- Constraint filtering supports only a limited number of explicit phrase patterns.
+- The reliability thresholds are manually selected engineering choices.
+- The system does not learn from listening history or user feedback.
+- The system does not implement collaborative filtering.
+- The application depends on external Gemini API availability.
+- No large-scale user study or recommendation-quality evaluation has been performed.
+- The current system does not implement retrieval-augmented generation, model fine-tuning, or an autonomous multi-tool agent workflow.
 
-=======================================================
-PROFILE: Chill Lofi
-=======================================================
-1. Library Rain - Score: 9.37/9.5
-   Because: Genre match (+1.00), Mood match (+1.00), Energy similarity (+3.00), Tempo similarity (+1.46), Valence similarity (+1.00), Danceability similarity (+0.97), Acousticness similarity (+0.94)
-2. Midnight Coding - Score: 9.05/9.5
-   Because: Genre match (+1.00), Mood match (+1.00), Energy similarity (+2.79), Tempo similarity (+1.46), Valence similarity (+0.96), Danceability similarity (+0.93), Acousticness similarity (+0.91)
-3. Focus Flow - Score: 8.21/9.5
-   Because: Genre match (+1.00), Energy similarity (+2.85), Tempo similarity (+1.44), Valence similarity (+0.99), Danceability similarity (+0.95), Acousticness similarity (+0.98)
-4. Spacewalk Thoughts - Score: 7.79/9.5
-   Because: Mood match (+1.00), Energy similarity (+2.79), Tempo similarity (+1.31), Valence similarity (+0.95), Danceability similarity (+0.86), Acousticness similarity (+0.88)
-5. Coffee Shop Stories - Score: 7.04/9.5
-   Because: Energy similarity (+2.94), Tempo similarity (+1.31), Valence similarity (+0.89), Danceability similarity (+0.99), Acousticness similarity (+0.91)
+These limitations mean that VibeFinder 2.0 should be treated as an educational prototype rather than a production-ready recommendation platform.
 
-=======================================================
-PROFILE: Deep Intense Rock
-=======================================================
-1. Storm Runner - Score: 9.20/9.5
-   Because: Genre match (+1.00), Mood match (+1.00), Energy similarity (+2.88), Tempo similarity (+1.46), Valence similarity (+0.92), Danceability similarity (+0.94), Acousticness similarity (+1.00)
-2. Gym Hero - Score: 7.45/9.5
-   Because: Mood match (+1.00), Energy similarity (+2.94), Tempo similarity (+1.21), Valence similarity (+0.63), Danceability similarity (+0.72), Acousticness similarity (+0.95)
-3. Iron Thunder - Score: 7.22/9.5
-   Because: Energy similarity (+2.97), Tempo similarity (+1.38), Valence similarity (+0.95), Danceability similarity (+0.99), Acousticness similarity (+0.94)
-4. Neon Fever - Score: 6.12/9.5
-   Because: Energy similarity (+2.79), Tempo similarity (+1.16), Valence similarity (+0.49), Danceability similarity (+0.70), Acousticness similarity (+0.98)
-5. Night Drive Loop - Score: 6.00/9.5
-   Because: Energy similarity (+2.40), Tempo similarity (+0.94), Valence similarity (+0.91), Danceability similarity (+0.87), Acousticness similarity (+0.88)
+## 10. Intended Use and Non-Intended Use
 
-=======================================================
-PROFILE: High-Energy Melancholic
-=======================================================
-1. Gym Hero - Score: 7.51/9.5
-   Because: Genre match (+1.00), Energy similarity (+2.94), Tempo similarity (+1.27), Valence similarity (+0.43), Danceability similarity (+0.92), Acousticness similarity (+0.95)
-2. Sunrise City - Score: 6.98/9.5
-   Because: Genre match (+1.00), Energy similarity (+2.61), Tempo similarity (+1.10), Valence similarity (+0.36), Danceability similarity (+0.99), Acousticness similarity (+0.92)
-3. Storm Runner - Score: 6.94/9.5
-   Because: Energy similarity (+2.88), Tempo similarity (+1.47), Valence similarity (+0.72), Danceability similarity (+0.86), Acousticness similarity (+1.00)
-4. Iron Thunder - Score: 6.86/9.5
-   Because: Energy similarity (+2.97), Tempo similarity (+1.31), Valence similarity (+0.85), Danceability similarity (+0.79), Acousticness similarity (+0.94)
-5. Neon Fever - Score: 6.19/9.5
-   Because: Energy similarity (+2.79), Tempo similarity (+1.23), Valence similarity (+0.29), Danceability similarity (+0.90), Acousticness similarity (+0.98)
-```
+### Intended Use
 
-### Strategy Pattern Experiment
+VibeFinder is designed for:
 
-To evaluate the different recommendation strategies, I used the same user profile and song catalog with all four strategies.
+- Classroom demonstrations.
+- Experimenting with recommendation algorithms.
+- Learning how language models can interpret user requests.
+- Exploring structured outputs and validation.
+- Understanding how deterministic software components can complement generative AI.
+- Demonstrating reliability checks in an AI application.
 
-The strategies produced the following top-ranked songs:
+### Non-Intended Use
 
-| Strategy | First recommended song |
+VibeFinder is not intended to:
+
+- Replace commercial music streaming platforms.
+- Provide large-scale personalized music discovery.
+- Guarantee that every recommendation matches a user's subjective taste.
+- Infer sensitive personal information from listening preferences.
+- Make claims about the quality of music beyond the available catalog metadata.
+
+## 11. Ethical Considerations and Human Oversight
+
+The system uses a small local catalog rather than collecting users' listening histories.
+
+However, recommendations can still be affected by dataset limitations, scoring weights, and incomplete preference extraction.
+
+A language model may misunderstand a request or infer a preference that the user did not explicitly state.
+
+The application attempts to reduce these risks through structured parsing, clarification, constraint filtering, and output validation.
+
+Users should review recommendations and decide whether they match their needs.
+
+The developer remains responsible for testing system behavior and documenting limitations rather than treating AI-generated outputs as automatically correct.
+
+## 12. Future Improvements
+
+Potential future improvements include:
+
+- Expanding the song catalog using a larger and more reliable dataset.
+- Improving natural-language constraint recognition.
+- Adding stronger handling of conflicting preferences.
+- Improving recommendation diversity.
+- Incorporating user feedback.
+- Exploring retrieval-augmented generation for larger music catalogs.
+- Adding a more extensive evaluation harness.
+- Comparing recommendation quality across different language models and preference-extraction approaches.
+
+## 13. AI Collaboration and Development Reflection
+
+AI tools were used during development to brainstorm system architecture, explore structured preference extraction, implement and debug Python components, and develop test scenarios.
+
+Several design decisions were made to keep the system reliable and understandable.
+
+For example, using Gemini to calculate song rankings was not adopted. Instead, Gemini interprets user requests while the existing Python recommendation engine remains responsible for deterministic scoring.
+
+The development process also involved debugging test expectations against the actual dataset. One low-energy filtering test initially expected nine eligible songs, but inspection showed that the correct number was eight. The test expectation was revised based on the actual data.
+
+A more complex retrieval system was considered but deferred because the existing catalog contains only 18 songs and the immediate goal was to complete a working, testable AI application.
+
+The project reinforced the importance of verifying AI-generated code, testing actual behavior, separating responsibilities between system components, and documenting limitations.
+
+## 14. Project Files
+
+| File | Purpose |
 |---|---|
-| Genre First | Pop Track |
-| Mood First | Happy Rock |
-| Energy First | Pop Track |
-| Balanced | Pop Track |
+| `src/agent.py` | Coordinates the AI recommendation workflow |
+| `src/preference_parser.py` | Extracts structured preferences using Gemini |
+| `src/llm_client.py` | Handles Gemini API communication |
+| `src/reliability.py` | Applies constraints and validates recommendations |
+| `src/recommender.py` | Existing deterministic recommendation engine |
+| `src/ai_main.py` | AI-powered command-line interface |
+| `diagrams/architecture.mmd` | System architecture diagram |
+| `logs/agent_traces.md` | Representative workflow traces |
+| `tests/` | Automated tests |
+| `ai_interactions.md` | AI collaboration and development notes |
 
-The Mood First strategy ranked Happy Rock first, while Genre First ranked Pop Track first. This showed that changing the importance of recommendation features can change the ranking of songs.
+---
 
-The experiment demonstrated that different recommendation strategies can prioritize different aspects of a user's musical preferences while using the same underlying recommendation system.
-
-## 7. Intended Use and Non-Intended Use
-
-**Intended Use**
-
-VibeFinder is designed for classroom learning and experimentation. It demonstrates how a recommendation algorithm can compare item characteristics with user preferences.
-
-It is useful for learning about content-based filtering, weighted scoring, and basic recommendation systems.
-
-**Non-Intended Use**
-
-VibeFinder is not designed to replace commercial music streaming platforms or provide large-scale personalized recommendations.
-
-It does not learn from listening history, understand personal taste deeply, or consider the behavior of other users. Its small dataset also makes it unsuitable for real-world music recommendation at scale.
-
-## 8. Ideas for Improvement
-
-If I continued developing VibeFinder, I would:
-
-- Increase the size and diversity of the music dataset.
-- Add penalties for important preference mismatches.
-- Allow users to adjust the importance of different music features.
-
-I would also explore collaborative filtering to compare recommendations based on similarities between users.
-
-## 9. Personal Reflection
-
-Building VibeFinder helped me understand how recommendation systems work behind the scenes.
-
-My biggest learning moment was discovering that changing the scoring weights could affect recommendation scores and make different songs more competitive. I initially thought matching a user's favorite genre would have the greatest influence. However, testing different profiles showed me that energy, tempo, and other features can also strongly influence the results.
-
-Using AI tools helped me understand concepts, debug Python errors, improve my code, and explore different ways to implement the recommendation algorithm. However, I learned that I should not blindly trust AI-generated code or explanations. I needed to run the program, inspect the output, and double-check whether the recommendations and calculations actually made sense.
-
-I was surprised that even a relatively simple scoring algorithm could produce recommendations that felt meaningful. By comparing song characteristics with user preferences, the system generated different results for different profiles without needing a complex machine learning model.
-
-If I extended this project, I would increase the dataset, improve how the system handles conflicting preferences, and explore collaborative filtering. I would also try to make the recommendations more diverse so that users receive a wider variety of songs.
-
-Overall, this project taught me that building an AI system is not just about making it work. It is also about testing its behavior, identifying its limitations, and understanding how design decisions affect its results.
-
-The second challenge expanded my understanding of object-oriented programming and software design. Implementing the Strategy design pattern taught me how to separate recommendation behavior from the main recommendation process. I also learned that different scoring priorities can produce different rankings, even when the same dataset and user preferences are used. This made the system more flexible and easier to extend.
+**Project:** VibeFinder 2.0 — AI-Powered Music Discovery Assistant  
+**Project Type:** Applied AI System / Educational Prototype  
+**Core Approach:** Gemini-powered natural-language understanding + deterministic content-based recommendation + reliability validation

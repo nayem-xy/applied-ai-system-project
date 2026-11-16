@@ -132,3 +132,70 @@ This challenge helped me understand how the Strategy design pattern can make a r
 I also learned that different recommendation strategies can use the same underlying features but prioritize them differently. This allows a system to support different recommendation approaches without duplicating the entire algorithm.
 
 AI assistance helped me understand the design pattern, organize the implementation, and debug issues. I tested the strategies and verified the application and automated tests myself.
+
+
+---
+
+## Project Development Log — AI Collaboration Reflection
+
+### How AI contributed to development
+
+AI assistance was used throughout the development of VibeFinder 2.0 to brainstorm the architecture, explain implementation choices, generate code suggestions, troubleshoot errors, and design tests.
+
+The main development discussions focused on:
+
+- Integrating Gemini to translate natural-language music requests into structured preferences.
+- Preserving the original deterministic recommendation engine rather than allowing an LLM to invent songs or recommendation scores.
+- Designing a reliability layer to enforce explicit user constraints before ranking.
+- Creating automated tests for successful recommendations, invalid matches, and ambiguous requests.
+
+### Important design decisions
+
+**1. Separating language understanding from recommendation ranking**
+
+We chose to use Gemini for understanding user intent and generating structured preferences. The existing Python recommendation engine remains responsible for scoring and ranking songs.
+
+This separation makes recommendation results more predictable and easier to test.
+
+**2. Adding deterministic constraint filtering**
+
+The original recommendation engine was designed to rank songs based on similarity. It did not guarantee that every explicit user restriction would be enforced.
+
+AI assistance helped identify this limitation and design a separate reliability component to filter ineligible songs before ranking.
+
+**3. Using mocked tests**
+
+Instead of depending on live Gemini API calls for every test, we introduced mocked components to test the agent's decision-making independently.
+
+This makes testing faster, more reproducible, and less dependent on API availability.
+
+### Debugging and human verification
+
+During reliability testing, one test initially failed because the expected number of low-energy songs was incorrect. The implementation correctly returned eight songs, while the test expected nine.
+
+We inspected the actual catalog values and corrected the test expectation rather than changing working filtering logic.
+
+The agent and reliability components were also tested independently and together.
+
+The human developer reviewed generated code, executed terminal commands, inspected outputs, and verified the test results.
+
+### AI suggestions accepted and revised
+
+- **Accepted:** Using structured JSON preference extraction instead of relying on free-form LLM responses.
+- **Accepted:** Keeping recommendation scoring deterministic and separate from Gemini.
+- **Accepted:** Adding a reliability layer to enforce explicit constraints.
+- **Revised:** The initial low-energy test expectation was corrected after checking the actual dataset.
+- **Deferred:** Building a more complex retrieval infrastructure until the core recommendation pipeline and documentation are complete.
+
+### Limitations and future improvements
+
+- The current music catalog contains only 18 songs, limiting recommendation diversity.
+- Constraint interpretation currently supports a limited set of explicit phrases.
+- Instrumentalness and low-energy thresholds are engineering choices that need further evaluation.
+- Gemini responses may introduce latency or become unavailable.
+- The current system does not yet have a large-scale retrieval index or extensive real-user evaluation.
+- Future improvements include expanding the music catalog, improving retrieval, supporting more natural-language constraints, and evaluating recommendation quality with a larger test dataset.
+
+### Human responsibility
+
+AI-generated code and suggestions were treated as assistance rather than automatically accepted solutions. The developer remained responsible for reviewing implementation decisions, running tests, checking outputs, and determining whether the system behaved as intended.

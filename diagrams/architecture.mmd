@@ -1,0 +1,31 @@
+
+flowchart TD
+    A["User enters natural-language request"] --> B["Music Recommendation Agent"]
+    B --> C["Gemini Preference Parser"]
+    C --> D{"Clarification needed?"}
+
+    D -->|Yes| E["Ask user for clarification"]
+    D -->|No| F["Structured Preferences"]
+
+    F --> G["Reliability Layer"]
+    G --> H{"Valid candidate songs?"}
+
+    H -->|No| I["Return No Valid Matches"]
+    H -->|Yes| J["Existing Recommendation Engine"]
+
+    J --> K["Rank Eligible Songs"]
+    K --> L["Output Validation"]
+
+    L --> M{"Validation passed?"}
+    M -->|No| N["Return Validation Failure"]
+    M -->|Yes| O["Return Recommendations"]
+
+    G --> P["Constraint Audit Report"]
+    L --> Q["Validation Report"]
+
+    O --> R["Human Reviews Results"]
+    I --> R
+    E --> R
+    N --> R
+
+    R --> S["Testing and Evaluation"]
