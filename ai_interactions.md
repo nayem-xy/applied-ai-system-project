@@ -41,3 +41,32 @@
 **How does the pattern appear in your final code?**
 
 <!-- Point to the relevant class or method -->
+
+---
+
+## Project Development Log — Stage 0 Baseline
+
+**Date:** November 15, 2026
+
+### Environment setup
+- Created and activated a local Python virtual environment: `.venv`.
+- Upgraded pip.
+- Installed project dependencies from `requirements.txt`.
+- Confirmed the environment uses Python 3.14.2.
+
+### Baseline verification
+- Ran `python -m pytest -q`: **2 tests passed**.
+- Ran `python -m src.main`: successfully loaded all 18 songs.
+- Confirmed recommendations were generated for four profiles:
+  - High-Energy Pop
+  - Chill Lofi
+  - Deep Intense Rock
+  - Advanced High-Energy Pop
+- Confirmed the original scoring strategies and recommendation explanations still work.
+
+### Human verification
+Reviewed the terminal output and confirmed that the original recommendation engine runs successfully in the new repository environment.
+
+### Baseline conclusion
+VibeFinder 1.0 is functional in the new Applied AI project repository. This verified version will serve as the baseline for evaluating VibeFinder 2.0.
+
