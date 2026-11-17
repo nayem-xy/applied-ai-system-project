@@ -432,3 +432,15 @@ More details are available in:
 ---
 
 *Built as an educational project exploring how generative AI can be integrated with traditional software systems to create a useful, testable, and more reliable application.*
+
+
+## Evaluation Harness
+
+VibeFinder includes a reproducible evaluation harness that tests
+five predefined end-to-end agent scenarios without requiring live
+Gemini API calls.
+
+Run it with:
+
+```bash
+python -m src.evaluate
