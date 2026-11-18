@@ -61,10 +61,18 @@ class PreferenceExtraction(BaseModel):
 class PreferenceParser:
     """Convert natural-language requests into music preferences."""
 
-    def __init__(self, gemini=None, csv_path=None):
-
+    def __init__(
+        self,
+        gemini=None,
+        csv_path=None,
+        prompt_style="specialized"
+    ):
         self.gemini = gemini or GeminiClient()
 
+        if prompt_style not in ("baseline", "specialized"):
+            raise ValueError("Invalid prompt style.")
+
+        self.prompt_style = prompt_style
         project_root = Path(__file__).resolve().parents[1]
 
         self.csv_path = (
@@ -103,7 +111,7 @@ class PreferenceParser:
     def _build_prompt(self, user_request):
         """Give Gemini the request and valid catalog vocabulary."""
 
-        return f"""
+        prompt = f"""
 You are the preference extraction component of VibeFinder,
 an AI-powered music recommendation system.
 
@@ -154,6 +162,51 @@ RULES:
 
 Return only the structured fields defined by the response schema.
 """
+        if self.prompt_style == "specialized":
+            prompt += """
+
+FEW-SHOT EXAMPLES — FOLLOW THESE INTERPRETATION PATTERNS:
+
+Example 1
+User: "I want calm instrumental music for studying, nothing too energetic."
+
+Interpretation:
+- Explicit preference: instrumental music.
+- Explicit constraint: instrumental only.
+- Explicit constraint: nothing too energetic.
+- Listening context: studying.
+- Explicit mood preference: relaxed.
+- Target energy: approximately 0.3.
+- Target instrumentalness: approximately 0.9.
+- Do not select happy simply because it is a default mood.
+- Do not invent a specific genre.
+
+Example 2
+User: "I only want music from the 1990s."
+
+Interpretation:
+- Preferred decade: 1990.
+- Explicit constraint: Release decade: 1990s.
+- Do not invent a genre, mood, or listening context.
+
+Example 3
+User: "Play something."
+
+Interpretation:
+- The request is ambiguous.
+- Confidence should be low.
+- Ask the user what kind of music they would like.
+- Do not invent preferences.
+
+SPECIALIZATION RULES:
+- Preserve every explicitly stated restriction.
+- Do not turn an inference into an explicit preference.
+- Do not invent a genre, mood, or context.
+- Ask for clarification when the request lacks useful information.
+- Follow the examples as interpretation guidance, not as fixed outputs.
+"""
+
+        return prompt
 
     # ========================================================
     # 3. PARSE AND NORMALIZE

@@ -70,3 +70,57 @@ Reviewed the terminal output and confirmed that the original recommendation engi
 ### Baseline conclusion
 VibeFinder 1.0 is functional in the new Applied AI project repository. This verified version will serve as the baseline for evaluating VibeFinder 2.0.
 
+## Agentic Workflow Enhancement
+
+We extended the original recommendation agent with a conditional planning and tool-execution architecture.
+
+### Components Added
+
+- `src/agent_planner.py`: Creates execution plans from extracted preferences.
+- `src/agent_tools.py`: Provides catalog inspection, filtering, ranking, and validation tools.
+- `src/agent.py`: Coordinates execution and records structured traces.
+
+### Planning Decisions
+
+The planner determines whether clarification is needed and whether explicit restrictions require catalog filtering.
+
+Examples:
+
+- Ambiguous requests take the clarification path.
+- Instrumental-only requests trigger catalog inspection and filtering.
+- Unrestricted requests use the full catalog.
+- Requests with no eligible matches stop before ranking.
+- Valid recommendations pass through a validation step.
+
+### Execution Traces
+
+Execution steps are recorded in `logs/agentic_traces.jsonl`. These traces demonstrate successful recommendations, no-match handling, and clarification behavior.
+
+### Verification
+
+- 8 agent tests passed.
+- 17 tests passed across the complete project.
+- Agent, planner, and tool modules passed Python compilation.
+
+## Few-Shot Prompt Specialization
+
+We added a `prompt_style` option to the preference parser:
+
+- `baseline`
+- `specialized`
+
+The specialized prompt includes examples covering instrumental music, decade restrictions, and ambiguous requests.
+
+We created `src/compare_prompts.py` to compare both prompt configurations.
+
+### Experiment Limitations
+
+The baseline completed 13 out of 13 evaluated checks in the recorded run. The specialized run encountered Gemini 503 service-unavailable errors, preventing a reliable comparison.
+
+We therefore do not claim that few-shot specialization improved measured accuracy. More successful repeated runs are needed.
+
+This work changes the prompt, not the underlying model weights. It is prompt specialization rather than model fine-tuning.
+
+## Human Review and Verification
+
+The developer reviewed the architecture, inspected generated code, ran automated tests, and examined execution traces. AI-generated suggestions were treated as development assistance and were verified rather than automatically accepted.

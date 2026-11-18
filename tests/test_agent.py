@@ -1,4 +1,5 @@
 
+import json
 from src.agent import MusicRecommendationAgent
 
 
@@ -110,3 +111,98 @@ def test_agent_requests_clarification():
     assert result["status"] == "needs_clarification"
     assert result["recommendations"] == []
     assert result["clarification_question"] is not None
+
+
+def test_agent_plan_changes_for_ambiguous_request():
+    agent = create_agent(
+        make_parser_result(
+            confidence=0.2,
+            clarification="What kind of music would you like?"
+        )
+    )
+
+    result = agent.run("Play something.")
+
+    actions = [
+        step["action"]
+        for step in result["execution_trace"]
+    ]
+
+    assert result["status"] == "needs_clarification"
+    assert "ask_clarification" in actions
+    assert "inspect_catalog" not in actions
+    assert "rank_candidates" not in actions
+
+
+def test_agent_inspects_catalog_for_explicit_constraints():
+    agent = create_agent(
+        make_parser_result(
+            constraints=["instrumental only"]
+        )
+    )
+
+    result = agent.run("I want instrumental music only.")
+
+    actions = [
+        step["action"]
+        for step in result["execution_trace"]
+    ]
+
+    assert result["status"] == "success"
+    assert "inspect_catalog" in actions
+    assert "filter_candidates" in actions
+    assert "rank_candidates" in actions
+    assert "validate_recommendations" in actions
+
+
+def test_agent_stops_when_no_candidates_match():
+    agent = create_agent(
+        make_parser_result(
+            constraints=["Release decade: 1990s"],
+            decade=1990
+        )
+    )
+
+    result = agent.run("Only music from the 1990s.")
+
+    actions = [
+        step["action"]
+        for step in result["execution_trace"]
+    ]
+
+    assert result["status"] == "no_valid_matches"
+    assert "decide_no_matches" in actions
+    assert "rank_candidates" not in actions
+
+
+def test_agent_skips_filtering_without_explicit_constraints():
+    agent = create_agent(make_parser_result())
+
+    result = agent.run("Give me some music.")
+
+    actions = [
+        step["action"]
+        for step in result["execution_trace"]
+    ]
+
+    assert result["status"] == "success"
+    assert "use_full_catalog" in actions
+    assert "inspect_catalog" not in actions
+    assert "filter_candidates" not in actions
+
+
+def test_agent_saves_execution_trace(tmp_path):
+    agent = create_agent(make_parser_result())
+
+    agent.trace_path = tmp_path / "agentic_traces.jsonl"
+
+    result = agent.run("Give me some music.")
+
+    assert agent.trace_path.exists()
+
+    with agent.trace_path.open(encoding="utf-8") as file:
+        saved_record = json.loads(file.readline())
+
+    assert saved_record["status"] == "success"
+    assert len(saved_record["steps"]) > 0
+    assert result["execution_trace"] == saved_record["steps"]

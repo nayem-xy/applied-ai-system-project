@@ -1,31 +1,31 @@
 
 flowchart TD
-    A["User enters natural-language request"] --> B["Music Recommendation Agent"]
-    B --> C["Gemini Preference Parser"]
-    C --> D{"Clarification needed?"}
+    A["User Music Request"] --> B["Preference Parser"]
+    B --> C["Agent Planner"]
 
-    D -->|Yes| E["Ask user for clarification"]
-    D -->|No| F["Structured Preferences"]
+    C --> D{"Request Clear?"}
 
-    F --> G["Reliability Layer"]
-    G --> H{"Valid candidate songs?"}
+    D -->|No| E["Clarification Tool"]
+    E --> F["Return Clarification"]
 
-    H -->|No| I["Return No Valid Matches"]
-    H -->|Yes| J["Existing Recommendation Engine"]
+    D -->|Yes| G{"Explicit Restrictions?"}
 
-    J --> K["Rank Eligible Songs"]
-    K --> L["Output Validation"]
+    G -->|Yes| H["Inspect Catalog Tool"]
+    H --> I["Filter Candidates Tool"]
+    G -->|No| J["Use Full Catalog"]
 
-    L --> M{"Validation passed?"}
-    M -->|No| N["Return Validation Failure"]
-    M -->|Yes| O["Return Recommendations"]
+    I --> K{"Any Eligible Songs?"}
+    K -->|No| L["Stop: No Valid Matches"]
+    K -->|Yes| M["Rank Candidates Tool"]
+    J --> M
 
-    G --> P["Constraint Audit Report"]
-    L --> Q["Validation Report"]
+    M --> N["Validate Recommendations"]
+    N --> O{"Validation Passed?"}
 
-    O --> R["Human Reviews Results"]
-    I --> R
-    E --> R
-    N --> R
+    O -->|No| P["Return Validation Failure"]
+    O -->|Yes| Q["Return Recommendations"]
 
-    R --> S["Testing and Evaluation"]
+    F --> R["Save Execution Trace"]
+    L --> R
+    P --> R
+    Q --> R

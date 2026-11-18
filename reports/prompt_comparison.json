@@ -1,0 +1,354 @@
+{
+  "evaluation_type": "Live Gemini prompt comparison",
+  "note": "Small predefined test set. Results are not statistically conclusive. API errors are excluded from accuracy.",
+  "results": {
+    "baseline": {
+      "cases": [
+        {
+          "name": "Calm instrumental study music",
+          "status": "evaluated",
+          "checks": {
+            "high_instrumentalness": true,
+            "low_energy": true,
+            "study_context": true,
+            "energy_restriction_preserved": true
+          },
+          "passed": 4,
+          "total": 4,
+          "confidence": 0.95,
+          "extracted_preferences": {
+            "favorite_genre": "pop",
+            "favorite_mood": "relaxed",
+            "target_energy": 0.25,
+            "target_tempo": null,
+            "target_valence": null,
+            "target_danceability": null,
+            "target_acousticness": null,
+            "target_popularity": null,
+            "preferred_decade": null,
+            "preferred_mood_tags": [
+              "calm",
+              "focused"
+            ],
+            "preferred_language": null,
+            "target_instrumentalness": 0.95
+          },
+          "metadata": {
+            "listening_context": "studying",
+            "explicit_constraints": [
+              "instrumental only",
+              "nothing too energetic"
+            ],
+            "explicit_preferences": [
+              "calm music",
+              "instrumental music",
+              "music for studying",
+              "low energy"
+            ],
+            "inferred_preferences": [
+              "low tempo",
+              "high acousticness"
+            ],
+            "confidence": 0.95,
+            "clarification_question": null,
+            "defaulted_fields": [
+              "favorite_genre"
+            ],
+            "needs_clarification": false
+          }
+        },
+        {
+          "name": "2000s decade restriction",
+          "status": "evaluated",
+          "checks": {
+            "correct_decade": true,
+            "restriction_preserved": true
+          },
+          "passed": 2,
+          "total": 2,
+          "confidence": 0.95,
+          "extracted_preferences": {
+            "favorite_genre": "pop",
+            "favorite_mood": "happy",
+            "target_energy": 0.5,
+            "target_tempo": null,
+            "target_valence": null,
+            "target_danceability": null,
+            "target_acousticness": null,
+            "target_popularity": null,
+            "preferred_decade": 2000,
+            "preferred_mood_tags": [],
+            "preferred_language": null,
+            "target_instrumentalness": null
+          },
+          "metadata": {
+            "listening_context": null,
+            "explicit_constraints": [
+              "only music from the 2000s"
+            ],
+            "explicit_preferences": [
+              "music from the 2000s"
+            ],
+            "inferred_preferences": [],
+            "confidence": 0.95,
+            "clarification_question": null,
+            "defaulted_fields": [
+              "favorite_genre",
+              "favorite_mood",
+              "target_energy"
+            ],
+            "needs_clarification": false
+          }
+        },
+        {
+          "name": "Ambiguous request",
+          "status": "evaluated",
+          "checks": {
+            "clarification_requested": true
+          },
+          "passed": 1,
+          "total": 1,
+          "confidence": 0.0,
+          "extracted_preferences": {
+            "favorite_genre": "pop",
+            "favorite_mood": "happy",
+            "target_energy": 0.5,
+            "target_tempo": null,
+            "target_valence": null,
+            "target_danceability": null,
+            "target_acousticness": null,
+            "target_popularity": null,
+            "preferred_decade": null,
+            "preferred_mood_tags": [],
+            "preferred_language": null,
+            "target_instrumentalness": null
+          },
+          "metadata": {
+            "listening_context": null,
+            "explicit_constraints": [],
+            "explicit_preferences": [],
+            "inferred_preferences": [],
+            "confidence": 0.0,
+            "clarification_question": "What genre, mood, or style of music are you in the mood to hear?",
+            "defaulted_fields": [
+              "favorite_genre",
+              "favorite_mood",
+              "target_energy"
+            ],
+            "needs_clarification": true
+          }
+        },
+        {
+          "name": "No invented genre or context",
+          "status": "evaluated",
+          "checks": {
+            "correct_decade": true,
+            "no_invented_context": true,
+            "no_invented_explicit_preferences": true
+          },
+          "passed": 3,
+          "total": 3,
+          "confidence": 0.85,
+          "extracted_preferences": {
+            "favorite_genre": "pop",
+            "favorite_mood": "happy",
+            "target_energy": 0.5,
+            "target_tempo": null,
+            "target_valence": null,
+            "target_danceability": null,
+            "target_acousticness": null,
+            "target_popularity": null,
+            "preferred_decade": 2000,
+            "preferred_mood_tags": [],
+            "preferred_language": null,
+            "target_instrumentalness": null
+          },
+          "metadata": {
+            "listening_context": null,
+            "explicit_constraints": [],
+            "explicit_preferences": [
+              "music from the 2000s"
+            ],
+            "inferred_preferences": [],
+            "confidence": 0.85,
+            "clarification_question": "Do you have any preferred genres or moods in mind for 2000s music?",
+            "defaulted_fields": [
+              "favorite_genre",
+              "favorite_mood",
+              "target_energy"
+            ],
+            "needs_clarification": true
+          }
+        },
+        {
+          "name": "Explicit versus inferred preferences",
+          "status": "evaluated",
+          "checks": {
+            "reading_context": true,
+            "acoustic_preference": true,
+            "relaxed_mood": true
+          },
+          "passed": 3,
+          "total": 3,
+          "confidence": 0.9,
+          "extracted_preferences": {
+            "favorite_genre": "pop",
+            "favorite_mood": "relaxed",
+            "target_energy": 0.3,
+            "target_tempo": null,
+            "target_valence": null,
+            "target_danceability": null,
+            "target_acousticness": 0.85,
+            "target_popularity": null,
+            "preferred_decade": null,
+            "preferred_mood_tags": [
+              "relaxed",
+              "calm"
+            ],
+            "preferred_language": null,
+            "target_instrumentalness": null
+          },
+          "metadata": {
+            "listening_context": "reading",
+            "explicit_constraints": [],
+            "explicit_preferences": [
+              "relaxed music",
+              "acoustic instruments"
+            ],
+            "inferred_preferences": [
+              "low energy suitable for reading",
+              "high acousticness",
+              "calm atmosphere"
+            ],
+            "confidence": 0.9,
+            "clarification_question": null,
+            "defaulted_fields": [
+              "favorite_genre"
+            ],
+            "needs_clarification": false
+          }
+        }
+      ],
+      "passed_checks": 13,
+      "total_checks": 13,
+      "accuracy": 100.0,
+      "completed_cases": 5,
+      "total_cases": 5,
+      "coverage": 100.0,
+      "api_errors": 0
+    },
+    "specialized": {
+      "cases": [
+        {
+          "name": "Calm instrumental study music",
+          "status": "api_or_parsing_error",
+          "error": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+        },
+        {
+          "name": "2000s decade restriction",
+          "status": "api_or_parsing_error",
+          "error": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+        },
+        {
+          "name": "Ambiguous request",
+          "status": "evaluated",
+          "checks": {
+            "clarification_requested": true
+          },
+          "passed": 1,
+          "total": 1,
+          "confidence": 0.0,
+          "extracted_preferences": {
+            "favorite_genre": "pop",
+            "favorite_mood": "happy",
+            "target_energy": 0.5,
+            "target_tempo": null,
+            "target_valence": null,
+            "target_danceability": null,
+            "target_acousticness": null,
+            "target_popularity": null,
+            "preferred_decade": null,
+            "preferred_mood_tags": [],
+            "preferred_language": null,
+            "target_instrumentalness": null
+          },
+          "metadata": {
+            "listening_context": null,
+            "explicit_constraints": [],
+            "explicit_preferences": [],
+            "inferred_preferences": [],
+            "confidence": 0.0,
+            "clarification_question": "What kind of music, mood, or genre would you like to listen to?",
+            "defaulted_fields": [
+              "favorite_genre",
+              "favorite_mood",
+              "target_energy"
+            ],
+            "needs_clarification": true
+          }
+        },
+        {
+          "name": "No invented genre or context",
+          "status": "api_or_parsing_error",
+          "error": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+        },
+        {
+          "name": "Explicit versus inferred preferences",
+          "status": "evaluated",
+          "checks": {
+            "reading_context": true,
+            "acoustic_preference": true,
+            "relaxed_mood": true
+          },
+          "passed": 3,
+          "total": 3,
+          "confidence": 0.9,
+          "extracted_preferences": {
+            "favorite_genre": "pop",
+            "favorite_mood": "relaxed",
+            "target_energy": 0.3,
+            "target_tempo": null,
+            "target_valence": null,
+            "target_danceability": null,
+            "target_acousticness": 0.85,
+            "target_popularity": null,
+            "preferred_decade": null,
+            "preferred_mood_tags": [
+              "relaxed",
+              "calm"
+            ],
+            "preferred_language": null,
+            "target_instrumentalness": null
+          },
+          "metadata": {
+            "listening_context": "reading",
+            "explicit_constraints": [
+              "acoustic instruments"
+            ],
+            "explicit_preferences": [
+              "relaxed music",
+              "acoustic instruments"
+            ],
+            "inferred_preferences": [
+              "low energy",
+              "calm or peaceful atmosphere for reading"
+            ],
+            "confidence": 0.9,
+            "clarification_question": null,
+            "defaulted_fields": [
+              "favorite_genre"
+            ],
+            "needs_clarification": false
+          }
+        }
+      ],
+      "passed_checks": 4,
+      "total_checks": 4,
+      "accuracy": 100.0,
+      "completed_cases": 2,
+      "total_cases": 5,
+      "coverage": 40.0,
+      "api_errors": 3
+    }
+  }
+}

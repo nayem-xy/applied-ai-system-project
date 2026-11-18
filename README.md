@@ -444,3 +444,68 @@ Run it with:
 
 ```bash
 python -m src.evaluate
+
+
+## 15. Agentic Workflow Enhancement
+
+VibeFinder 2.0 uses a conditional planning workflow to determine which operations are needed for each music request.
+
+### Architecture Components
+
+- **AgentPlanner:** Creates an execution plan based on extracted preferences and request metadata.
+- **AgentTools:** Provides catalog inspection, candidate filtering, ranking, and validation tools.
+- **Agent:** Coordinates execution, handles decisions, and records structured traces.
+
+### Agent Decision Workflow
+
+1. Ambiguous requests trigger clarification.
+2. Requests with explicit restrictions trigger catalog inspection and filtering.
+3. Requests without explicit restrictions use the full catalog.
+4. Eligible candidates are ranked by the deterministic recommendation engine.
+5. Recommendations are validated before being returned.
+
+If no eligible songs remain, the agent stops rather than returning recommendations that violate the user's restrictions.
+
+### Execution Tracing
+
+Structured execution traces are saved in `logs/agentic_traces.jsonl`.
+
+Each trace records the action, reason, status, and relevant output, making the agent's execution paths inspectable.
+
+See [the architecture diagram](diagrams/architecture.mmd).
+
+**Design clarification:** The planner is deterministic and rule-based, not an autonomous LLM reasoning system. Gemini handles natural-language preference extraction, while Python components control planning, filtering, ranking, and validation.
+
+### Testing
+
+The complete project test suite currently passes 17 tests.
+
+Run it with:
+
+```bash
+python -m pytest -q
+```
+
+
+## 16. Few-Shot Prompt Specialization
+
+The preference parser supports two prompt configurations:
+
+- `baseline`: Uses the original preference-extraction prompt.
+- `specialized`: Adds few-shot examples and interpretation rules.
+
+The examples guide Gemini to preserve explicit restrictions, distinguish explicit preferences from inferred preferences, and request clarification when a request is ambiguous.
+
+This is prompt-level specialization. The underlying Gemini model is not fine-tuned or retrained.
+
+The comparison experiment can be run with:
+
+```bash
+python -m src.compare_prompts
+```
+
+In the recorded experiment, the baseline completed 13 out of 13 evaluated checks, but Gemini returned service-unavailable (503) errors during the specialized run.
+
+Therefore, the comparison is inconclusive and does not establish that the specialized prompt performs better.
+
+The generated report is stored in `reports/prompt_comparison.json`.
